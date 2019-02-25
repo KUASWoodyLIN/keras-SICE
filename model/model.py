@@ -2,6 +2,7 @@ import tensorflow as tf
 from model.gaussian_filter import GaussianFilterLayer
 from model.losses_layer import L1Losses
 from model.losses import pass_loss, dssim_loss
+import keras
 
 
 def luminance_enhancement_network(inputs):
@@ -96,8 +97,14 @@ def create_train_model():
 
 
 def create_pred_model():
-    inputs = tf.keras.Input(shape=(129, 129, 3))
-    detail_outputs = detail_enhancement_network(inputs)
+    inputs = tf.keras.Input(shape=(None, None, 3))
+
+    # Create Image detail
+    gaussian_output = GaussianFilterLayer(5, 0, 1)(inputs)
+    image_detail = tf.keras.layers.Subtract()([inputs, gaussian_output])
+
+    # Main
+    detail_outputs = detail_enhancement_network(image_detail)
     luminance_outputs = luminance_enhancement_network(inputs)
     x = tf.keras.layers.Add()([detail_outputs, luminance_outputs])
     outputs = whole_image_enhancement_network(x)

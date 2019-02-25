@@ -108,7 +108,7 @@ venv.bak/
 # *.png
 *.weights
 *.h5
-logs/
+logs*/
 tmp*
 eval_logs*
 .idea/
