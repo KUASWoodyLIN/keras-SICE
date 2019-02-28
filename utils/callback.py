@@ -4,13 +4,14 @@ from utils.tensorboard_logging import log_images
 
 
 class SavePredImage(tf.keras.callbacks.Callback):
-    def __init__(self, callback, images, images_label):
+    def __init__(self, callback, images, images_label, pred_model=None):
         super().__init__()
         self.callback = callback
-        self.loss_minimum = 100000
+        self.loss_minimum = 200000
         self.images = images
         self.images_label = images_label
-        self.dummy = np.expand_dims(np.zeros_like(images[0]), axis=0)
+        self.pred_model = pred_model
+        # self.dummy = np.expand_dims(np.zeros_like(images[0]), axis=0)
 
     def on_train_begin(self, logs=None):
         for img_id, img in zip(self.images_label, self.images):
@@ -21,7 +22,9 @@ class SavePredImage(tf.keras.callbacks.Callback):
         if loss < self.loss_minimum:
             for img_id, img in zip(self.images_label, self.images):
                 img = np.expand_dims(img, axis=0)
-                _, _, pred_images = self.model.predict([img, self.dummy])
+                # _, _, pred_images = self.model.predict([img, self.dummy])
+                pred_images = self.pred_model.predict(img)
+
                 # pred_images[pred_images < 0] = 0
                 # pred_images[pred_images > 1] = 1
                 pred_images = pred_images[:, :, :, ::-1]

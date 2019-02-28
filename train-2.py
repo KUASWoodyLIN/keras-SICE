@@ -32,7 +32,7 @@ def main():
     # Checkpoint
     callback = tf.keras.callbacks.TensorBoard(logs_dir)
     callback.set_model(model)
-    save_img = SavePredImage(callback, x_test, x_name)
+    save_img = SavePredImage(callback, x_test, x_name, pred_model)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         logs_dir + '/model/Total-best-ep{epoch:03d}-val_loss{val_loss:.2f}.h5',
         monitor='val_loss',

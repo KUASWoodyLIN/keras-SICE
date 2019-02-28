@@ -83,8 +83,9 @@ def create_train_model():
 
     detail_outputs = detail_enhancement_network(detail_model.output)
     luminance_outputs = luminance_enhancement_network(inputs)
-    luminance_outputs = ClipLayer()(luminance_outputs)
-    x = tf.keras.layers.Add()([detail_outputs, luminance_outputs])
+    # x = tf.keras.layers.Add()([detail_outputs, luminance_outputs])
+    luminance_outputs_clip = ClipLayer()(luminance_outputs)
+    x = tf.keras.layers.Add()([detail_outputs, luminance_outputs_clip])
     outputs = whole_image_enhancement_network(x)
 
     # Calculation detail loss

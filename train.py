@@ -25,12 +25,14 @@ def main():
     x_test, x_name = create_testing_data(x_test, y_test, pred_model=True)
 
     # Create model
-    model, _ = create_train_model()
-    model.load_weights('./logs-2/model/Total-best-ep478-val_loss6206.39.h5')
+    model, pred_model = create_train_model()
+    # model.load_weights('sice_weights_new.h5')
+    model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5', True)
+
     # Checkpoint
     callback = tf.keras.callbacks.TensorBoard(logs_dir)
     callback.set_model(model)
-    save_img = SavePredImage(callback, x_test, x_name)
+    save_img = SavePredImage(callback, x_test, x_name, pred_model)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         logs_dir + '/model/Total-best-ep{epoch:03d}-val_loss{val_loss:.2f}.h5',
         monitor='val_loss',
