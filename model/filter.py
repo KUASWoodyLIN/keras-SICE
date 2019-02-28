@@ -1,9 +1,9 @@
 import tensorflow as tf
 
 
-class GaussianFilterLayer(tf.keras.layers.Layer):
+class GaussianFilter(tf.keras.layers.Layer):
     def __init__(self, size, mean, std, **kwargs):
-        super(GaussianFilterLayer, self).__init__(**kwargs)
+        super(GaussianFilter, self).__init__(**kwargs)
         self.size = size
         self.mean = float(mean)
         self.std = float(std)
@@ -15,7 +15,7 @@ class GaussianFilterLayer(tf.keras.layers.Layer):
         gauss_kernel = tf.einsum('i,j->ij', vals, vals)
         gauss_kernel = gauss_kernel / tf.reduce_sum(gauss_kernel)
         self.gauss_kernel = gauss_kernel[:, :, tf.newaxis, tf.newaxis] * tf.ones((1, 1, 3, 1))
-        super(GaussianFilterLayer, self).build(input_shape)
+        super(GaussianFilter, self).build(input_shape)
 
     def call(self, inputs, **kwargs):
         return tf.nn.depthwise_conv2d(inputs, self.gauss_kernel, strides=[1, 1, 1, 1], padding="SAME")
@@ -24,7 +24,7 @@ class GaussianFilterLayer(tf.keras.layers.Layer):
         return input_shape
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import cv2
     import numpy as np
     import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     image = tf.image.resize_images(image, (new_w, new_h))
     image = tf.expand_dims(tf.image.resize_image_with_crop_or_pad(image, 129, 129), axis=0)
 
-    model = tf.keras.Sequential([GaussianFilterLayer(5, 0, 1)])
+    model = tf.keras.Sequential([GaussianFilter(5, 0, 1)])
     output_image = model.predict(image)
 
     plt.figure()

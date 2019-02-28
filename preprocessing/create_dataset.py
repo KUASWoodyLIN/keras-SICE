@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import tensorflow as tf
 
 
@@ -24,62 +25,156 @@ def load_data_path(dataset_path):
     # Train data
     x_train_1 = [os.path.join(dataset_path_1, i + '/1.JPG') for i in data_list_1]
     x_train_2 = [os.path.join(dataset_path_2, i + '/1.JPG') for i in data_list_2]
-    x_train = x_train_1 + x_train_2
+    x_train = sorted(x_train_1 + x_train_2)
     y_train_1 = [os.path.join(dataset_path_1, 'Label/' + i + '.JPG') for i in data_list_1]
     y_train_2 = [os.path.join(dataset_path_2, 'Label/' + i + '.JPG') if int(i) < 126 else 
                  os.path.join(dataset_path_2, 'Label/' + i + '.PNG') for i in data_list_2 ]
-    y_train = y_train_1 + y_train_2
+    y_train = sorted(y_train_1 + y_train_2)
 
     # Test data
-    x_test = [os.path.join(dataset_path_1, i + '/1.JPG') for i in test_files]
-    y_test = [os.path.join(dataset_path_1, 'Label/' + i + '.JPG') for i in test_files]
+    x_test = sorted([os.path.join(dataset_path_1, i + '/1.JPG') for i in test_files])
+    y_test = sorted([os.path.join(dataset_path_1, 'Label/' + i + '.JPG') for i in test_files])
     return (x_train, y_train), (x_test, y_test)
 
 
-def image_process(file_path, input_shape):
-    image = cv2.imread(file_path)
+def train_image_process(x_file_path, y_file_path):
+    x_image = cv2.imread(x_file_path)
+    y_image = cv2.imread(y_file_path)
+    # if x_image.shape == y_image.shape:
+    #     return x_image, y_image
+
+    image = np.concatenate([x_image, y_image], axis=2)
     org_h, org_w, _ = image.shape
-    resize_h, resize_w = input_shape
+    resize_h, resize_w = (162, 162)
     scale = max(resize_w / org_w, resize_h / org_h)
     new_w = int(org_w * scale)
     new_h = int(org_h * scale)
-    image = tf.image.resize_images(image, (new_w, new_h))
-    image = tf.image.resize_image_with_crop_or_pad(image, 129, 129)
+    image = tf.image.resize_images(image, (new_h, new_w))
+    image = tf.random_crop(image, [129, 129, 6])    # 80%
+    # image = tf.image.resize_image_with_crop_or_pad(image, new_w, new_h)
+    # image = tf.image.resize_images(image, (129, 129))
+    image = image.numpy()
+    x_image = image[:, :, :3]
+    y_image = image[:, :, 3:]
+    return x_image, y_image
 
-    return image.numpy()
+
+def test_image_process(x_file_path, y_file_path):
+    x_image = cv2.imread(x_file_path)
+    y_image = cv2.imread(y_file_path)
+
+    image = np.concatenate([x_image, y_image], axis=2)
+    org_h, org_w, _ = image.shape
+    resize_h, resize_w = (256, 256)
+    scale = max(resize_w / org_w, resize_h / org_h)
+    new_w = int(org_w * scale)
+    new_h = int(org_h * scale)
+    image = tf.image.resize_images(image, (new_h, new_w))
+    image = tf.image.resize_image_with_crop_or_pad(image, 256, 256)
+    image = image.numpy()
+    x_image = image[:, :, :3]
+    y_image = image[:, :, 3:]
+    return x_image, y_image
 
 
 def create_resize_data(save_path, x_train_path, y_train_path, x_test_path, y_test_path):
-    for i, (dir_name, data_org_path) in enumerate(zip(['x_train', 'x_test'], [x_train_path, x_test_path])):
-        dir_name = os.path.join(save_path, dir_name)
-        os.makedirs(dir_name, exist_ok=True)
-        for path in data_org_path:
-            filename = os.path.split(path)[0]
-            filename = "{}_{}".format(os.path.split(os.path.split(filename)[0])[1], os.path.split(filename)[1] + '.jpg')
-            image = image_process(path, (129, 129))
-            data_save_path = os.path.join(dir_name, filename)
-            cv2.imwrite(data_save_path, image)
-            print(data_save_path)
-    count = 0
-    print('train data {}'.format(len(x_train_path)))
-    print('test data {}'.format(len(x_test_path)))
+    # Create training data
+    error_images = []
+    x_dir_name = os.path.join(save_path, 'x_train')
+    os.makedirs(x_dir_name, exist_ok=True)
 
-    for i, (dir_name, data_org_path) in enumerate(zip(['y_train', 'y_test'], [y_train_path, y_test_path])):
-        dir_name = os.path.join(save_path, dir_name)
-        os.makedirs(dir_name, exist_ok=True)
-        for path in data_org_path:
-            filepath, filename = os.path.split(path)
-            filename = "{}_{}".format(os.path.split(filepath.split('/Label')[0])[1], filename.split('.')[0] + '.jpg')
-            print(count, path)
-            image = image_process(path, (129, 129))
-            data_save_path = os.path.join(dir_name, filename)
-            cv2.imwrite(data_save_path, image)
-            count+=1
+    y_dir_name = os.path.join(save_path, 'y_train')
+    os.makedirs(y_dir_name, exist_ok=True)
+    for x_path, y_path in zip(x_train_path, y_train_path):
+        _x_filename = os.path.split(x_path)[0]
+        y_filepath, _y_filename = os.path.split(y_path)
+        for j in range(5):
+            x_filename = "{}_{}_{}.jpg".format(os.path.split(os.path.split(_x_filename)[0])[1], os.path.split(_x_filename)[1], j)
+            y_filename = "{}_{}_{}.jpg".format(os.path.split(y_filepath.split('/Label')[0])[1], _y_filename.split('.')[0], j)
+
+            print(x_filename)
+            print(y_filename)
+            try:
+                x_image, y_image = train_image_process(x_path, y_path)
+            except:
+                error_images.append(x_filename)
+                break
+            data_save_path = os.path.join(x_dir_name, x_filename)
+            cv2.imwrite(data_save_path, x_image)
+            data_save_path = os.path.join(y_dir_name, y_filename)
+            cv2.imwrite(data_save_path, y_image)
+    print(error_images)
+
+    # Create testing data
+    error_images = []
+    x_dir_name = os.path.join(save_path, 'x_test')
+    os.makedirs(x_dir_name, exist_ok=True)
+
+    y_dir_name = os.path.join(save_path, 'y_test')
+    os.makedirs(y_dir_name, exist_ok=True)
+    for x_path, y_path in zip(x_test_path, y_test_path):
+        _x_filename = os.path.split(x_path)[0]
+        y_filepath, _y_filename = os.path.split(y_path)
+        x_filename = "{}_{}.jpg".format(os.path.split(os.path.split(_x_filename)[0])[1], os.path.split(_x_filename)[1])
+        y_filename = "{}_{}.jpg".format(os.path.split(y_filepath.split('/Label')[0])[1], _y_filename.split('.')[0])
+
+        print(x_filename)
+        print(y_filename)
+        try:
+            x_image, y_image = test_image_process(x_path, y_path)
+        except:
+            error_images.append(x_filename)
+            break
+        data_save_path = os.path.join(x_dir_name, x_filename)
+        cv2.imwrite(data_save_path, x_image)
+        # print(data_save_path)
+        data_save_path = os.path.join(y_dir_name, y_filename)
+        cv2.imwrite(data_save_path, y_image)
+        # print(data_save_path)
+    print(error_images)
+
+
+def create_test_org_data(dataset_path):
+    from shutil import copyfile
+
+    # Copy to y_test_org
+    x_dst_path = os.path.join(dataset_path_, 'x_test_org')
+    y_dst_path = os.path.join(dataset_path_, 'y_test_org')
+
+    (_, _), (x_test, y_test) = load_data_path(dataset_path)
+    test_files_name = [os.path.split(path)[-1] for path in y_test]
+
+    for src, img_id in zip(x_test, test_files_name):
+        copyfile(src, os.path.join(x_dst_path, img_id))
+
+    for src, img_id in zip(y_test, test_files_name):
+        copyfile(src, os.path.join(y_dst_path, img_id))
 
 
 if __name__ == '__main__':
-    tf.enable_eager_execution()
     dataset_path_ = '/home/share/dataset/SICE_data'
+
+    # Create org test image
+    # create_test_org_data(dataset_path_)
+
+    # Create resize image
+    tf.enable_eager_execution()
     (x_train_path, y_train_path), (x_test_path, y_test_path) = load_data_path(dataset_path_)
     create_resize_data(dataset_path_, x_train_path, y_train_path, x_test_path, y_test_path)
+
+
+
+    # for i in [127, 169, 193, 194, 195, 208, 212]:
+    #     x_path = os.path.join(dataset_path_, 'Dataset_Part2/{}/1.JPG'.format(i))
+    #     y_path = os.path.join(dataset_path_, 'Dataset_Part2/Label/{}.PNG'.format(i))
+    #     for j in range(5):
+    #         filename = "Dataset_Part2_{}_{}.jpg".format(i, j)
+    #         x_image, y_image = train_image_process(x_path, y_path)
+    #         print(filename)
+    #
+    #         data_save_path = os.path.join(dataset_path_, 'x_train/' + filename)
+    #         cv2.imwrite(data_save_path, x_image)
+    #         data_save_path = os.path.join(dataset_path_, 'y_train/' + filename)
+    #         cv2.imwrite(data_save_path, y_image)
+
 

@@ -5,14 +5,14 @@ from utils.callback import SavePredImage, CustomReduceLR, SaveModelEpochs
 from model.sice import create_train_model
 from preprocessing.image_processing import load_data_path, data_generator_wapper, create_testing_data
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def main():
     # Parameter
     dataset_path = '/home/share/dataset/SICE_data'
     batch_size = 16
-    logs_dir = 'logs-1'
+    logs_dir = 'logs-2'
     os.makedirs(logs_dir + '/model/')
 
     # Create data
@@ -25,8 +25,10 @@ def main():
     x_test, x_name = create_testing_data(x_test, y_test, pred_model=True)
 
     # Create model
-    model, _ = create_train_model()
-    model.load_weights('./logs-2/model/Total-best-ep478-val_loss6206.39.h5')
+    model, pred_model = create_train_model()
+    # model.load_weights('sice_weights_new.h5')
+    model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5', True)
+
     # Checkpoint
     callback = tf.keras.callbacks.TensorBoard(logs_dir)
     callback.set_model(model)

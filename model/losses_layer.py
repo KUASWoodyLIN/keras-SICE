@@ -11,6 +11,6 @@ class L1Losses(tf.keras.layers.Layer):
     def call(self, inputs, **kwargs):
         y_pred = inputs[0]
         y_true = inputs[1]
-        loss = tf.reduce_mean(tf.abs(y_true - y_pred))
+        loss = tf.reduce_sum(tf.abs(y_true - y_pred), axis=[1, 2, 3])
         # self.add_loss(loss, inputs=inputs)
-        return loss
+        return tf.reduce_mean(loss)
