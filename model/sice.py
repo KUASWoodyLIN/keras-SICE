@@ -1,9 +1,9 @@
 import tensorflow as tf
-from model.losses_layer import L1Losses
-from model.clip_layer import ClipLayer
-from model.losses import pass_loss, dssim_loss, mse_loss
-from model.filter import GaussianFilter
-from model.conv import Conv2DTranspose
+from losses.losses_layer import L1Losses
+from layer.clip import ClipLayer
+from losses.losses import pass_loss, dssim_loss, mse_loss
+from layer.filter import GaussianFilter
+from layer.conv import Conv2DTranspose
 
 
 def detail_enhancement_network(inputs):
@@ -71,8 +71,6 @@ def whole_image_enhancement_network(inputs):
 
 
 def create_train_model():
-    # inputs = tf.keras.Input(shape=(129, 129, 3))
-    # inputs_y = tf.keras.Input(shape=(129, 129, 3))
     inputs = tf.keras.Input(shape=(None, None, 3))
     inputs_y = tf.keras.Input(shape=(None, None, 3))
 
@@ -104,10 +102,6 @@ def create_train_model():
 
     outputs_final = ClipLayer()(outputs)
     model_pred = tf.keras.Model(inputs=inputs, outputs=outputs_final)
-    # model_pred = tf.keras.Model(inputs=inputs, outputs=[detail_outputs, luminance_outputs, outputs])
-
-    # model_.load_weights('../logs/model/Total-best-ep082-val_loss3.35.h5')
-    # model_pred_.save_weights('../sice_weights.h5')
 
     return model, model_pred
 
@@ -132,16 +126,12 @@ def create_pred_model():
 if __name__ == '__main__':
     model_, pred_model_ = create_train_model()
 
-    # model_2 = create_pred_model_2()
-    # model_2.load_weights('../sice_weights.h5', True)
+    model_1 = create_pred_model()
+    model_1.load_weights('../sice_weights.h5')
+    # for new_layer, org_layer in zip(filter(lambda l: l.weights, model_2.layers[1]), filter(lambda l: l.weights, model_1.layers[2])):
+    #     new_layer.set_weights(org_layer.get_weights())
+    #     print('"{}" & "{}" match'.format(new_layer.name, org_layer.name))
     #
-    # model_1 = create_pred_model()
-    # model_1.load_weights('../sice_weights.h5')
-    # # for new_layer, org_layer in zip(filter(lambda l: l.weights, model_2.layers[1]), filter(lambda l: l.weights, model_1.layers[2])):
-    # #     new_layer.set_weights(org_layer.get_weights())
-    # #     print('"{}" & "{}" match'.format(new_layer.name, org_layer.name))
-    # #
-    # model_1.summary()
-    # model_2.summary()
-    #
+    model_1.summary()
+
     # print()
