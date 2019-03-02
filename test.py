@@ -12,7 +12,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 def main():
     # Parameter
     dataset_path = '/home/share/dataset/SICE_data'
-    dataset = 'sice_train'    # sice_train, sice_test or test
+    dataset = 'sice_test'    # sice_train, sice_test or test
 
     if dataset == 'sice_train':
         output_path = os.path.join(dataset_path, 'outputs_sice_train')
@@ -38,7 +38,8 @@ def main():
     # model = create_pred_model_2()
     # model.load_weights('sice_weights.h5', True)
     model, pred_model = create_train_model()
-    model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5')
+    # model.load_weights('./logs-1/model/Epoch{epoch:03d}.h5')
+    model.load_weights('Total-best-ep176-val_loss15324.76.h5')
 
     # model.load_weights('./sice_weights.h5', True)
 
@@ -46,7 +47,7 @@ def main():
     for img_id, img_path in zip(x_name, x_test_path):
         print('Processing {}'.format(img_id))
         img = image_process(img_path)
-        if dataset == 'sice_train' or dataset_path == 'sice_test':
+        if dataset == 'sice_train' or dataset == 'sice_test':
             org_h, org_w, _ = img.shape
             resize_h, resize_w = 1024, 1024
             scale = max(resize_w / org_w, resize_h / org_h)
@@ -58,9 +59,6 @@ def main():
         img_out = pred_model.predict(img)
         # img_1, img_2, img_3 = pred_model.predict(img)
 
-
-        img_out[img_out < 0] = 0
-        img_out[img_out > 1] = 1
         img_out = img_out * 255
         cv2.imwrite(os.path.join(output_path, img_id), img_out[0])
 

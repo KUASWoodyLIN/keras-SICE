@@ -25,8 +25,6 @@ class SavePredImage(tf.keras.callbacks.Callback):
                 # _, _, pred_images = self.model.predict([img, self.dummy])
                 pred_images = self.pred_model.predict(img)
 
-                # pred_images[pred_images < 0] = 0
-                # pred_images[pred_images > 1] = 1
                 pred_images = pred_images[:, :, :, ::-1]
                 log_images(self.callback, 'image/'+img_id, pred_images, epoch)
             self.loss_minimum = loss
