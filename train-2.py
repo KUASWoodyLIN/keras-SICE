@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 
-from utils.callback import SavePredImage, CustomReduceLR, SaveModelEpochs
+from utils.callback import SavePredImageEpoch, SavePredImageBest, CustomReduceLR, SaveModelEpochs, SaveOutputHistogram
 from model.sice import create_train_model
 from preprocessing.image_processing import load_data_path, data_generator_wapper, create_testing_data
 
@@ -32,7 +32,9 @@ def main():
     # Checkpoint
     callback = tf.keras.callbacks.TensorBoard(logs_dir, histogram_freq=1)
     callback.set_model(model)
-    save_img = SavePredImage(callback, x_test, x_name, pred_model)
+    save_img_best = SavePredImageBest(callback, x_test, x_name, pred_model)
+    save_img_every_epoch = SavePredImageEpoch(callback, x_test, x_name, 50, pred_model)
+    save_histogram = SaveOutputHistogram(callback, x_test[0])
     checkpoint = tf.keras.callbacks.ModelCheckpoint(
         logs_dir + '/model/Total-best-ep{epoch:03d}-val_loss{val_loss:.2f}.h5',
         monitor='val_loss',
@@ -49,7 +51,7 @@ def main():
                         steps_per_epoch=step,
                         epochs=4000,
                         validation_data=(x_valid, y_valid),
-                        callbacks=[reduce_lr, save_img, checkpoint, checkpoint_2, callback])
+                        callbacks=[reduce_lr, save_histogram, save_img_best, save_img_every_epoch, checkpoint, checkpoint_2, callback])
 
 
 if __name__ == '__main__':
