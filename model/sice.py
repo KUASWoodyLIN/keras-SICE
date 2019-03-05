@@ -21,7 +21,7 @@ def detail_enhancement_network(inputs):
         x = tf.keras.layers.Conv2D(64, 3, 1, 'same')(x)
         x = tf.keras.layers.PReLU(shared_axes=[1, 2])(x)
         x = tf.keras.layers.Conv2D(3, 1, 1, activation=tf.nn.tanh)(x)
-        x = tf.keras.layers.Add()([inputs, x])
+        x = tf.keras.layers.Add(name='detail_output')([inputs, x])
         return x
 
 
@@ -41,7 +41,7 @@ def luminance_enhancement_network(inputs):
         x = Conv2DTranspose(3, 9, 2, align_shape=inputs)(x)
         x = tf.keras.layers.PReLU(shared_axes=[1, 2])(x)
         x = tf.keras.layers.Concatenate()([x, inputs])
-        x = tf.keras.layers.Conv2D(3, 1, 1, name='luminance')(x)
+        x = tf.keras.layers.Conv2D(3, 1, 1, activation=tf.nn.tanh, name='luminance_output')(x)
         return x
 
 

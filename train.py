@@ -44,7 +44,7 @@ def main():
     # Create model
     model, pred_model = create_train_model()
     # model.load_weights('sice_weights_new.h5')
-    model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5', True)
+    # model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5')
 
     # Checkpoint
     callback = tf.keras.callbacks.TensorBoard(logs_dir)

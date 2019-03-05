@@ -62,8 +62,8 @@ class SaveOutputHistogram(tf.keras.callbacks.Callback):
         self.test_img = np.expand_dims(test_img, axis=0)
 
     def on_train_begin(self, logs=None):
-        detail_layer = self.model.get_layer('add').output
-        luminance_layer = self.model.get_layer('luminance').output
+        detail_layer = self.model.get_layer('detail_output').output
+        luminance_layer = self.model.get_layer('luminance_output').output
         whole_image_layer = self.model.get_layer('whole_image').output
 
         self.pred_model = tf.keras.backend.function(inputs=[self.model.input[0]],
