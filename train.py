@@ -47,7 +47,7 @@ def main():
     model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5', True)
 
     # Checkpoint
-    callback = tf.keras.callbacks.TensorBoard(logs_dir, histogram_freq=1)
+    callback = tf.keras.callbacks.TensorBoard(logs_dir)
     callback.set_model(model)
     save_img_best = SavePredImageBest(callback, x_test, x_name, pred_model)
     save_img_every_epoch = SavePredImageEpoch(callback, x_test, x_name, 50, pred_model)
@@ -61,7 +61,7 @@ def main():
         period=1)
     checkpoint_2 = SaveModelEpochs(logs_dir + '/model/Epoch{epoch:03d}.h5', 50)
     # reduce_lr = CustomReduceLR(0.1, 30)
-    # reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(factor=0.8, patience=50, min_lr=1e-6)
+    # reduce_lr = tf.keras.callbacks.Redgit
 
     # Training    model.load_weights('./logs-2-best/model/Total-best-ep176-val_loss15324.76.h5')
 

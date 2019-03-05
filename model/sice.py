@@ -20,7 +20,7 @@ def detail_enhancement_network(inputs):
         x = tf.keras.layers.PReLU(shared_axes=[1, 2])(x)
         x = tf.keras.layers.Conv2D(64, 3, 1, 'same')(x)
         x = tf.keras.layers.PReLU(shared_axes=[1, 2])(x)
-        x = tf.keras.layers.Conv2D(3, 1, 1)(x)
+        x = tf.keras.layers.Conv2D(3, 1, 1, activation=tf.nn.tanh)(x)
         x = tf.keras.layers.Add()([inputs, x])
         return x
 

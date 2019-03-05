@@ -30,7 +30,7 @@ def main():
     model.load_weights('./logs-2-2/model/Total-best-ep047-val_loss13747.00.h5', True)
 
     # Checkpoint
-    callback = tf.keras.callbacks.TensorBoard(logs_dir, histogram_freq=1)
+    callback = tf.keras.callbacks.TensorBoard(logs_dir)
     callback.set_model(model)
     save_img_best = SavePredImageBest(callback, x_test, x_name, pred_model)
     save_img_every_epoch = SavePredImageEpoch(callback, x_test, x_name, 50, pred_model)
