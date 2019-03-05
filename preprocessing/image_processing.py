@@ -13,6 +13,15 @@ def load_data_path(dataset_path):
     return (x_train, y_train), (x_test, y_test)
 
 
+def load_data_path_v2(dataset_path):
+    x_train = glob(dataset_path+'/x_train-2/*')
+    y_train = glob(dataset_path+'/y_train-2/*')
+    x_test = glob(dataset_path+'/x_test/*')
+    y_test = glob(dataset_path+'/y_test/*')
+
+    return (x_train, y_train), (x_test, y_test)
+
+
 def load_org_data_path(dataset_path):
     # Test data index
     with open(os.path.join(dataset_path, 'testing_index.txt')) as f:

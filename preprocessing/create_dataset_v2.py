@@ -90,17 +90,17 @@ def test_image_process(x_file_path, y_file_path):
 def create_resize_data(save_path, x_train_path, y_train_path, x_test_path, y_test_path):
     # Create training data
     error_images = []
-    x_dir_name = os.path.join(save_path, 'x_train')
+    x_dir_name = os.path.join(save_path, 'x_train-2')
     os.makedirs(x_dir_name, exist_ok=True)
 
-    y_dir_name = os.path.join(save_path, 'y_train')
+    y_dir_name = os.path.join(save_path, 'y_train-2')
     os.makedirs(y_dir_name, exist_ok=True)
     for x_path, y_path in zip(x_train_path, y_train_path):
         x_first_dir, x_second_dir, _x_filename = x_path.split('/')[-3::]
-        _x_filename = _x_filename.split('.JPG')
+        _x_filename = _x_filename.split('.JPG')[0]
         for j in range(3):
             x_filename = "{}_{}_{}_{}.jpg".format(x_first_dir, x_second_dir, _x_filename, j)
-            y_filename = "{}_{}_{}.jpg".format(y_path.split('/')[-3], y_path.split('/')[-1].split('.')[0], j)
+            y_filename = "{}_{}_{}_{}.jpg".format(y_path.split('/')[-3], y_path.split('/')[-1].split('.')[0], _x_filename, j)
 
             print(x_filename)
             print(y_filename)
@@ -144,24 +144,8 @@ def create_resize_data(save_path, x_train_path, y_train_path, x_test_path, y_tes
     print(error_images)
 
 
-def create_test_org_data(dataset_path):
-    from shutil import copyfile
-
-    # Copy to y_test_org
-    x_dst_path = os.path.join(dataset_path_, 'x_test_org')
-    y_dst_path = os.path.join(dataset_path_, 'y_test_org')
-
-    (_, _), (x_test, y_test) = load_data_path(dataset_path)
-    test_files_name = [os.path.split(path)[-1] for path in y_test]
-
-    for src, img_id in zip(x_test, test_files_name):
-        copyfile(src, os.path.join(x_dst_path, img_id))
-
-    for src, img_id in zip(y_test, test_files_name):
-        copyfile(src, os.path.join(y_dst_path, img_id))
-
-
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     dataset_path_ = '/home/share/dataset/SICE_data'
 
     # Create org test image
