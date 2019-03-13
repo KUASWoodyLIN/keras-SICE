@@ -55,6 +55,36 @@ class SavePredImageEpoch(tf.keras.callbacks.Callback):
             self.loss_minimum = loss
 
 
+class SavePredImageBestStep1(tf.keras.callbacks.Callback):
+    def __init__(self, callback, images, images_label, pred_model=None):
+        super().__init__()
+        self.callback = callback
+        self.loss_minimum = 200000
+        self.images = images
+        self.images_label = images_label
+        self.pred_model = pred_model
+        # self.dummy = np.expand_dims(np.zeros_like(images[0]), axis=0)
+
+    def on_train_begin(self, logs=None):
+        for img_id, img in zip(self.images_label, self.images):
+            log_images(self.callback, 'image/' + img_id, [img[..., ::-1]], 0)
+
+    def on_epoch_end(self, epoch, logs=None):
+        loss = logs.get('val_loss')
+        if loss < self.loss_minimum:
+            for img_id, img in zip(self.images_label, self.images):
+                img = np.expand_dims(img, axis=0)
+                pred_images = self.pred_model.predict(img)
+
+                img1 = pred_images[0][0, :, :, ::-1]
+                img2 = pred_images[1][0, :, :, ::-1]
+
+                combine_img = np.hstack([img1, img2])
+                log_images(self.callback, 'image/'+img_id, [combine_img], epoch)
+
+            self.loss_minimum = loss
+
+
 class SaveOutputHistogram(tf.keras.callbacks.Callback):
     def __init__(self, callback, test_img):
         super().__init__()

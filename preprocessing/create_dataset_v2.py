@@ -154,4 +154,3 @@ if __name__ == '__main__':
     # Create resize image
     tf.enable_eager_execution()
     (x_train_path, y_train_path), (x_test_path, y_test_path) = load_data_path(dataset_path_)
-    create_resize_data(dataset_path_, x_train_path, y_train_path, x_test_path, y_test_path)

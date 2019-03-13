@@ -16,6 +16,8 @@ def load_data_path(dataset_path):
 def load_data_path_v2(dataset_path):
     x_train = glob(dataset_path+'/x_train-2/*')
     y_train = glob(dataset_path+'/y_train-2/*')
+    x_train = [l for l in x_train if int(l.split('_')[-2]) == 2]
+    y_train = [l for l in y_train if int(l.split('_')[-2]) == 2]
     x_test = glob(dataset_path+'/x_test/*')
     y_test = glob(dataset_path+'/y_test/*')
 
@@ -56,7 +58,33 @@ def _data_generator(x_path, y_path, batch_size):
         x_data = np.asarray(x_data)
         y_data = np.asarray(y_data)
         dummy = np.zeros([batch_size, 1])
-        yield [x_data, y_data], [dummy, y_data, y_data]
+        yield [x_data, y_data], [dummy, dummy, y_data]
+
+
+def data_generator_wapper_step1(x_path, y_path, batch_size):
+    n = len(x_path)
+    if n == 0 or batch_size <= 0:
+        return None
+    return _data_generator_step1(x_path, y_path, batch_size)
+
+
+def _data_generator_step1(x_path, y_path, batch_size):
+    n = len(x_path)
+    i = 0
+    index = 0
+    while True:
+        x_data = []
+        y_data = []
+        if i == 0:
+            index = np.random.permutation(n)
+        for b in range(batch_size):
+            x_data.append(image_process(x_path[index[i]], True))
+            y_data.append(image_process(y_path[index[i]], True))
+            i = (i + 1) % n
+        x_data = np.asarray(x_data)
+        y_data = np.asarray(y_data)
+        dummy = np.zeros([batch_size, 1])
+        yield [x_data, y_data], [dummy, dummy]
 
 
 def create_testing_data(x_path, y_path, pred_model=False):
@@ -72,7 +100,7 @@ def create_testing_data(x_path, y_path, pred_model=False):
     dummy = np.zeros([len(x_path), 1])
     if pred_model:
         return x_data, files_name
-    return [x_data, y_data], [dummy, y_data, y_data]
+    return [x_data, y_data], [dummy, dummy, y_data]
 
 
 def rand(a=0, b=1):

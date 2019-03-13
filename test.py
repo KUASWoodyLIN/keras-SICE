@@ -6,7 +6,7 @@ from glob import glob
 from model.sice import create_pred_model, create_train_model
 from preprocessing.image_processing import load_org_data_path, image_process
 from preprocessing.create_dataset import load_data_path
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def main():
@@ -15,19 +15,23 @@ def main():
     dataset = 'sice_test'    # sice_train, sice_test or test
 
     if dataset == 'sice_train':
-        output_path = os.path.join(dataset_path, 'outputs_sice_train')
+        output_path = os.path.join(dataset_path, 'outputs_sice_train_no_tanh')
         os.makedirs(output_path, exist_ok=True)
         (x_test_path, _), (_, _) = load_data_path(dataset_path)
         x_name = [path.split('SICE_data/')[-1].split('/1.')[0].replace('/', '_') + '.jpg' for path in x_test_path]
 
     elif dataset == 'sice_test':
-        output_path = os.path.join(dataset_path, 'outputs_sice_test')
+        # output_path = os.path.join(dataset_path, 'outputs_sice_test_no_tanh')
+        # output_path = os.path.join(dataset_path, 'outputs_sice_test_epochs_15')
+        output_path = os.path.join(dataset_path, 'outputs_sice_test_epochs_1487')
+
         os.makedirs(output_path, exist_ok=True)
         x_test_path, x_name = load_org_data_path(dataset_path)
 
     else:
         testing_path = os.path.join(dataset_path, 'TestingImage')
-        output_path = os.path.join(dataset_path, 'outputs_testingimage')
+        output_path = os.path.join(dataset_path, 'outputs_testingimage_epochs_15')
+        # output_path = os.path.join(dataset_path, 'outputs_testingimage_epochs_1487')
         os.makedirs(output_path, exist_ok=True)
         x_test_path = glob(testing_path + '/*')
         x_name = [os.path.split(file_path)[-1] for file_path in x_test_path]
@@ -39,7 +43,11 @@ def main():
     # model.load_weights('sice_weights.h5', True)
     model, pred_model = create_train_model()
     # model.load_weights('./logs-1/model/Epoch{epoch:03d}.h5')
-    model.load_weights('Total-best-ep176-val_loss15324.76.h5')
+    # model.load_weights('Total-best-ep015-val_loss12142.72.h5')
+    model.load_weights('Total-best-ep1487-val_loss10592.92.h5')
+
+    # model.load_weights('tanh-highssim-best.h5')
+    # model.load_weights('no-tanh-best.h5')
 
     # model.load_weights('./sice_weights.h5', True)
 
